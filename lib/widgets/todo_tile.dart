@@ -15,7 +15,7 @@ class TodoTile extends ConsumerWidget {
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       child: ListTile(
-        // ✅ Checkbox (status toggle)
+        //  Checkbox (status toggle)
         leading: Checkbox(
           value: todo.status == 'completed',
           onChanged: (value) {
@@ -25,7 +25,7 @@ class TodoTile extends ConsumerWidget {
           },
         ),
 
-        // ✅ Title
+        // Title
         title: Text(
           todo.title,
           style: TextStyle(
@@ -35,15 +35,15 @@ class TodoTile extends ConsumerWidget {
           ),
         ),
 
-        // ✅ Description
+        //  Description
         subtitle: Text(todo.description),
 
-        // ✅ Edit navigation
+        // Edit navigation
         onTap: () {
           context.push('/edit', extra: {'userId': todo.userId, 'todo': todo});
         },
 
-        // ✅ Delete
+        //  Delete
         trailing: IconButton(
           icon: const Icon(Icons.delete, color: Colors.red),
           onPressed: () {
