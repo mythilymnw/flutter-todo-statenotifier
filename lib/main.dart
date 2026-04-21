@@ -1,39 +1,28 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:firebase_core/firebase_core.dart';
 
-import 'core/abstract_todo_service.dart';
-import 'service/todo_service_impl.dart';
-import 'viewmodel/todo_provider.dart';
-import 'views/todo_screen.dart';
+import 'firebase_options.dart';  
+import 'core/app_router.dart';
 
-void main() {
-  final firestore = FirebaseFirestore.instance;
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
 
-  runApp(
-    MultiProvider(
-      providers: [
-       
-        Provider<AbstractTodoService>(
-          create: (_) => TodoServiceImpl(firestore),
-        ),
-
-      
-        ChangeNotifierProvider(
-          create: (context) =>
-              TodoProvider(context.read<AbstractTodoService>()),
-        ),
-      ],
-      child: const MyApp(),
-    ),
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
   );
+
+  runApp(const ProviderScope(child: MyApp()));
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends ConsumerWidget {
   const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return const MaterialApp(home: TodoScreen());
+  Widget build(BuildContext context, WidgetRef ref) {
+    return MaterialApp.router(
+      debugShowCheckedModeBanner: false,
+      routerConfig: AppRouter.router(ref),
+    );
   }
 }

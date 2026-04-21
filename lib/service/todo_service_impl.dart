@@ -1,33 +1,39 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../core/abstract_todo_service.dart';
+import '../core/todo_service.dart';
 import '../model/todo_model.dart';
 
-class TodoServiceImpl implements AbstractTodoService {
-  final FirebaseFirestore firestore;
-
-  TodoServiceImpl(this.firestore);
+class TodoServiceImpl implements TodoService {
+  final _db = FirebaseFirestore.instance;
 
   @override
-  Future<List<TodoModel>> fetchTodos() async {
-    final snapshot = await firestore.collection('todos').get();
-
-    return snapshot.docs
-        .map((doc) => TodoModel.fromMap(doc.data(), doc.id))
-        .toList();
+  Stream<List<Todo>> getTodos(String userId) {
+    return _db
+        .collection('tasks')
+        .where('userId', isEqualTo: userId)
+        .snapshots()
+        .map((s) => s.docs.map((d) => Todo.fromMap(d.id, d.data())).toList());
   }
 
   @override
-  Future<void> addTodo(TodoModel todo) async {
-    await firestore.collection('todos').add(todo.toMap());
+  Future<void> addTodo(Todo todo) async {
+    await _db.collection('tasks').add(todo.toMap());
   }
 
   @override
-  Future<void> updateTodo(TodoModel todo) async {
-    await firestore.collection('todos').doc(todo.id).update(todo.toMap());
+  Future<void> updateTodo(Todo todo) async {
+    await _db.collection('tasks').doc(todo.id).update(todo.toMap());
   }
 
   @override
   Future<void> deleteTodo(String id) async {
-    await firestore.collection('todos').doc(id).delete();
+    await _db.collection('tasks').doc(id).delete();
+  }
+
+  @override
+  Future<void> updateStatus(String id, String status) async {
+    await _db.collection('tasks').doc(id).update({
+      'status': status,
+      'updatedAt': DateTime.now().toIso8601String(),
+    });
   }
 }
