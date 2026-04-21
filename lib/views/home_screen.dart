@@ -27,7 +27,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           return const Scaffold(body: Center(child: Text("Not logged in")));
         }
 
-        // Start listening to todos
+        // start listening to todos
         ref.read(todoProvider.notifier).listen(user.uid);
 
         return Scaffold(
