@@ -27,7 +27,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           return const Scaffold(body: Center(child: Text("Not logged in")));
         }
 
-        // 🔥 Start listening to todos
+        // Start listening to todos
         ref.read(todoProvider.notifier).listen(user.uid);
 
         return Scaffold(
@@ -46,7 +46,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
           body: Column(
             children: [
-              // 🔽 FILTER BUTTONS
+              // FILTER BUTTONS
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
@@ -58,7 +58,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
               const Divider(),
 
-              // 🔽 TODO LIST
+              //  TODO LIST
               Expanded(
                 child: todoState.when(
                   data: (list) {
