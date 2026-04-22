@@ -1,7 +1,12 @@
 library todo_model;
+
 import 'package:built_value/built_value.dart';
 import 'package:built_value/serializer.dart';
+
+import 'serializers.dart';
+
 part 'todo_model.g.dart';
+
 abstract class Todo implements Built<Todo, TodoBuilder> {
   String get id;
   String get title;
@@ -9,7 +14,20 @@ abstract class Todo implements Built<Todo, TodoBuilder> {
   String get userId;
   String get status;
   String get createdAt;
- Todo._();
-factory Todo([void Function(TodoBuilder) updates]) = _$Todo;
-static Serializer<Todo> get serializer => _$todoSerializer;
+  String get updatedAt;
+
+  Todo._();
+  factory Todo([void Function(TodoBuilder) updates]) = _$Todo;
+
+  static Serializer<Todo> get serializer => _$todoSerializer;
+
+
+  static Todo fromJson(Map<String, dynamic> json) {
+    return serializers.deserializeWith(Todo.serializer, json)!;
+  }
+
+  Map<String, dynamic> toJson() {
+    return serializers.serializeWith(Todo.serializer, this)
+        as Map<String, dynamic>;
+  }
 }

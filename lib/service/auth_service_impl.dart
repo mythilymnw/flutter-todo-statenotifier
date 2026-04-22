@@ -3,7 +3,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../core/auth_service.dart';
 import '../model/user_model.dart';
-import '../model/serializers.dart';
 
 class AuthServiceImpl implements AuthService {
   final _auth = FirebaseAuth.instance;
@@ -23,12 +22,7 @@ class AuthServiceImpl implements AuthService {
       ..createdAt = DateTime.now().toIso8601String()
       ..updatedAt = DateTime.now().toIso8601String());
 
-    final json = serializers.serializeWith(
-      AppUser.serializer,
-      user,
-    );
-
-    await _db.collection('users').doc(user.uid).set(json as Map<String, dynamic>);
+    await _db.collection('users').doc(user.uid).set(user.toJson());
 
     return user;
   }
@@ -42,15 +36,7 @@ class AuthServiceImpl implements AuthService {
 
     final doc = await _db.collection('users').doc(cred.user!.uid).get();
 
-    final data = {
-      ...doc.data()!,
-      'uid': doc.id,
-    };
-
-    return serializers.deserializeWith(
-      AppUser.serializer,
-      data,
-    );
+    return AppUser.fromJson({...doc.data()!, 'uid': doc.id});
   }
 
   @override
@@ -63,15 +49,7 @@ class AuthServiceImpl implements AuthService {
 
       final doc = await _db.collection('users').doc(user.uid).get();
 
-      final data = {
-        ...doc.data()!,
-        'uid': doc.id,
-      };
-
-      return serializers.deserializeWith(
-        AppUser.serializer,
-        data,
-      );
+      return AppUser.fromJson({...doc.data()!, 'uid': doc.id});
     });
   }
 }
