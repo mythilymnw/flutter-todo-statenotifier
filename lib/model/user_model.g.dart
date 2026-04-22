@@ -30,9 +30,19 @@ class _$AppUserSerializer implements StructuredSerializer<AppUser> {
         object.email,
         specifiedType: const FullType(String),
       ),
+      'password',
+      serializers.serialize(
+        object.password,
+        specifiedType: const FullType(String),
+      ),
       'createdAt',
       serializers.serialize(
         object.createdAt,
+        specifiedType: const FullType(String),
+      ),
+      'updatedAt',
+      serializers.serialize(
+        object.updatedAt,
         specifiedType: const FullType(String),
       ),
     ];
@@ -78,8 +88,24 @@ class _$AppUserSerializer implements StructuredSerializer<AppUser> {
                   )!
                   as String;
           break;
+        case 'password':
+          result.password =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )!
+                  as String;
+          break;
         case 'createdAt':
           result.createdAt =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )!
+                  as String;
+          break;
+        case 'updatedAt':
+          result.updatedAt =
               serializers.deserialize(
                     value,
                     specifiedType: const FullType(String),
@@ -101,7 +127,11 @@ class _$AppUser extends AppUser {
   @override
   final String email;
   @override
+  final String password;
+  @override
   final String createdAt;
+  @override
+  final String updatedAt;
 
   factory _$AppUser([void Function(AppUserBuilder)? updates]) =>
       (AppUserBuilder()..update(updates))._build();
@@ -110,7 +140,9 @@ class _$AppUser extends AppUser {
     required this.uid,
     required this.name,
     required this.email,
+    required this.password,
     required this.createdAt,
+    required this.updatedAt,
   }) : super._();
   @override
   AppUser rebuild(void Function(AppUserBuilder) updates) =>
@@ -126,7 +158,9 @@ class _$AppUser extends AppUser {
         uid == other.uid &&
         name == other.name &&
         email == other.email &&
-        createdAt == other.createdAt;
+        password == other.password &&
+        createdAt == other.createdAt &&
+        updatedAt == other.updatedAt;
   }
 
   @override
@@ -135,7 +169,9 @@ class _$AppUser extends AppUser {
     _$hash = $jc(_$hash, uid.hashCode);
     _$hash = $jc(_$hash, name.hashCode);
     _$hash = $jc(_$hash, email.hashCode);
+    _$hash = $jc(_$hash, password.hashCode);
     _$hash = $jc(_$hash, createdAt.hashCode);
+    _$hash = $jc(_$hash, updatedAt.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -146,7 +182,9 @@ class _$AppUser extends AppUser {
           ..add('uid', uid)
           ..add('name', name)
           ..add('email', email)
-          ..add('createdAt', createdAt))
+          ..add('password', password)
+          ..add('createdAt', createdAt)
+          ..add('updatedAt', updatedAt))
         .toString();
   }
 }
@@ -166,9 +204,17 @@ class AppUserBuilder implements Builder<AppUser, AppUserBuilder> {
   String? get email => _$this._email;
   set email(String? email) => _$this._email = email;
 
+  String? _password;
+  String? get password => _$this._password;
+  set password(String? password) => _$this._password = password;
+
   String? _createdAt;
   String? get createdAt => _$this._createdAt;
   set createdAt(String? createdAt) => _$this._createdAt = createdAt;
+
+  String? _updatedAt;
+  String? get updatedAt => _$this._updatedAt;
+  set updatedAt(String? updatedAt) => _$this._updatedAt = updatedAt;
 
   AppUserBuilder();
 
@@ -178,7 +224,9 @@ class AppUserBuilder implements Builder<AppUser, AppUserBuilder> {
       _uid = $v.uid;
       _name = $v.name;
       _email = $v.email;
+      _password = $v.password;
       _createdAt = $v.createdAt;
+      _updatedAt = $v.updatedAt;
       _$v = null;
     }
     return this;
@@ -208,10 +256,20 @@ class AppUserBuilder implements Builder<AppUser, AppUserBuilder> {
             r'AppUser',
             'email',
           ),
+          password: BuiltValueNullFieldError.checkNotNull(
+            password,
+            r'AppUser',
+            'password',
+          ),
           createdAt: BuiltValueNullFieldError.checkNotNull(
             createdAt,
             r'AppUser',
             'createdAt',
+          ),
+          updatedAt: BuiltValueNullFieldError.checkNotNull(
+            updatedAt,
+            r'AppUser',
+            'updatedAt',
           ),
         );
     replace(_$result);

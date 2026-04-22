@@ -15,6 +15,22 @@ class HomeScreen extends ConsumerStatefulWidget {
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   String filter = 'all';
+  bool _initialized = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    if (!_initialized) {
+      final user = ref.read(authProvider).value;
+
+      if (user != null) {
+        ref.read(todoProvider.notifier).listen(user.uid);
+      }
+
+      _initialized = true;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -24,11 +40,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return authState.when(
       data: (user) {
         if (user == null) {
-          return const Scaffold(body: Center(child: Text("Not logged in")));
+          return const Scaffold(
+            body: Center(child: Text("Not logged in")),
+          );
         }
-
-        // start listening to todos
-        ref.read(todoProvider.notifier).listen(user.uid);
 
         return Scaffold(
           appBar: AppBar(
@@ -46,7 +61,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
           body: Column(
             children: [
-              // FILTER BUTTONS
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
@@ -58,7 +72,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
               const Divider(),
 
-              //  TODO LIST
               Expanded(
                 child: todoState.when(
                   data: (list) {
@@ -93,7 +106,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       },
       loading: () =>
           const Scaffold(body: Center(child: CircularProgressIndicator())),
-      error: (e, _) => Scaffold(body: Center(child: Text(e.toString()))),
+      error: (e, _) =>
+          Scaffold(body: Center(child: Text(e.toString()))),
     );
   }
 
@@ -102,7 +116,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       onPressed: () {
         setState(() => filter = value);
       },
-      child: Text(value.toUpperCase()),
+      child: Text(
+        value.toUpperCase(),
+        style: TextStyle(
+          fontWeight: filter == value ? FontWeight.bold : FontWeight.normal,
+        ),
+      ),
     );
   }
 }

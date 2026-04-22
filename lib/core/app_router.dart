@@ -9,20 +9,26 @@ import '../views/add_edit_screen.dart';
 import '../model/todo_model.dart';
 
 class AppRouter {
- static GoRouter router(WidgetRef ref) {
+  static GoRouter router(WidgetRef ref) {
     return GoRouter(
       initialLocation: '/',
 
       redirect: (context, state) {
-        final auth = ref.read(authProvider);
-        final isLoggedIn = auth.value != null;
+        final authState = ref.read(authProvider);
 
-        final path = state.uri.toString();
+        final isLoggedIn = authState.maybeWhen(
+          data: (user) => user != null,
+          orElse: () => false,
+        );
 
+        final path = state.matchedLocation;
+
+        // not logged in → only allow login/register
         if (!isLoggedIn && path != '/register') {
           return '/login';
         }
 
+        // logged in → block login/register
         if (isLoggedIn &&
             (path == '/login' || path == '/register')) {
           return '/';
@@ -44,20 +50,32 @@ class AppRouter {
           path: '/',
           builder: (context, state) => const HomeScreen(),
         ),
+
+        // ADD TODO
         GoRoute(
           path: '/add',
           builder: (context, state) {
-            final userId = state.extra as String;
+            final userId = state.extra as String?;
+            if (userId == null) {
+              return const HomeScreen();
+            }
             return AddEditScreen(userId: userId);
           },
         ),
+
+        // EDIT TODO
         GoRoute(
           path: '/edit',
           builder: (context, state) {
-            final data = state.extra as Map;
+            final data = state.extra as Map<String, dynamic>?;
+
+            if (data == null) {
+              return const HomeScreen();
+            }
+
             return AddEditScreen(
-              userId: data['userId'],
-              todo: data['todo'] as Todo,
+              userId: data['userId'] ?? '',
+              todo: data['todo'] as Todo?,
             );
           },
         ),

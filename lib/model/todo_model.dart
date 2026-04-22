@@ -21,7 +21,6 @@ abstract class Todo implements Built<Todo, TodoBuilder> {
 
   static Serializer<Todo> get serializer => _$todoSerializer;
 
-
   static Todo fromJson(Map<String, dynamic> json) {
     return serializers.deserializeWith(Todo.serializer, json)!;
   }
@@ -29,5 +28,10 @@ abstract class Todo implements Built<Todo, TodoBuilder> {
   Map<String, dynamic> toJson() {
     return serializers.serializeWith(Todo.serializer, this)
         as Map<String, dynamic>;
+  }
+
+ 
+  Todo updateStatus(String newStatus) {
+    return rebuild((b) => b..status = newStatus);
   }
 }

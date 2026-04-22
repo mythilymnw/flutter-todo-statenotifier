@@ -9,7 +9,11 @@ class AddEditScreen extends ConsumerStatefulWidget {
   final String userId;
   final Todo? todo;
 
-  const AddEditScreen({super.key, required this.userId, this.todo});
+  const AddEditScreen({
+    super.key,
+    required this.userId,
+    this.todo,
+  });
 
   @override
   ConsumerState<AddEditScreen> createState() => _AddEditScreenState();
@@ -18,6 +22,8 @@ class AddEditScreen extends ConsumerStatefulWidget {
 class _AddEditScreenState extends ConsumerState<AddEditScreen> {
   final titleController = TextEditingController();
   final descController = TextEditingController();
+
+  bool isLoading = false;
 
   @override
   void initState() {
@@ -30,11 +36,61 @@ class _AddEditScreenState extends ConsumerState<AddEditScreen> {
   }
 
   @override
+  void dispose() {
+    titleController.dispose();
+    descController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _save() async {
+    if (titleController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Title cannot be empty")),
+      );
+      return;
+    }
+
+    setState(() => isLoading = true);
+
+    final notifier = ref.read(todoProvider.notifier);
+
+    if (widget.todo != null) {
+      // UPDATE
+      final updated = widget.todo!.rebuild((b) => b
+        ..title = titleController.text.trim()
+        ..description = descController.text.trim()
+        ..updatedAt = DateTime.now().toIso8601String());
+
+      await notifier.update(updated);
+    } else {
+      // ADD
+      final todo = Todo((b) => b
+        ..id = DateTime.now().millisecondsSinceEpoch.toString()
+        ..title = titleController.text.trim()
+        ..description = descController.text.trim()
+        ..userId = widget.userId
+        ..status = 'pending'
+        ..createdAt = DateTime.now().toIso8601String()
+        ..updatedAt = DateTime.now().toIso8601String());
+
+      await notifier.add(todo);
+    }
+
+    setState(() => isLoading = false);
+
+    if (mounted) {
+      context.pop();
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final isEdit = widget.todo != null;
 
     return Scaffold(
-      appBar: AppBar(title: Text(isEdit ? "Edit Task" : "Add Task")),
+      appBar: AppBar(
+        title: Text(isEdit ? "Edit Task" : "Add Task"),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -50,34 +106,14 @@ class _AddEditScreenState extends ConsumerState<AddEditScreen> {
             ),
             const SizedBox(height: 20),
 
-            ElevatedButton(
-              onPressed: () {
-                if (titleController.text.isEmpty) return;
-
-                if (isEdit) {
-                  final updated = widget.todo!.copyWith(
-                    title: titleController.text,
-                    description: descController.text,
-                  );
-
-                  ref.read(todoProvider.notifier).update(updated);
-                } else {
-                  final todo = Todo(
-                    id: '',
-                    title: titleController.text,
-                    description: descController.text,
-                    userId: widget.userId,
-                    status: 'pending',
-                    createdAt: DateTime.now(),
-                    updatedAt: DateTime.now(),
-                  );
-
-                  ref.read(todoProvider.notifier).add(todo);
-                }
-
-                context.pop();
-              },
-              child: Text(isEdit ? "Update" : "Add"),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: isLoading ? null : _save,
+                child: isLoading
+                    ? const CircularProgressIndicator()
+                    : Text(isEdit ? "Update" : "Add"),
+              ),
             ),
           ],
         ),

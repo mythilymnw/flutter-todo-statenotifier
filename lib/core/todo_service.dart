@@ -1,5 +1,4 @@
 import '../model/todo_model.dart';
-
 abstract class TodoService {
   Stream<List<Todo>> getTodos(String userId);
   Future<void> addTodo(Todo todo);

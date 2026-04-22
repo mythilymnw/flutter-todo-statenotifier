@@ -48,6 +48,11 @@ class _$TodoSerializer implements StructuredSerializer<Todo> {
         object.createdAt,
         specifiedType: const FullType(String),
       ),
+      'updatedAt',
+      serializers.serialize(
+        object.updatedAt,
+        specifiedType: const FullType(String),
+      ),
     ];
 
     return result;
@@ -115,6 +120,14 @@ class _$TodoSerializer implements StructuredSerializer<Todo> {
                   )!
                   as String;
           break;
+        case 'updatedAt':
+          result.updatedAt =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )!
+                  as String;
+          break;
       }
     }
 
@@ -135,6 +148,8 @@ class _$Todo extends Todo {
   final String status;
   @override
   final String createdAt;
+  @override
+  final String updatedAt;
 
   factory _$Todo([void Function(TodoBuilder)? updates]) =>
       (TodoBuilder()..update(updates))._build();
@@ -146,6 +161,7 @@ class _$Todo extends Todo {
     required this.userId,
     required this.status,
     required this.createdAt,
+    required this.updatedAt,
   }) : super._();
   @override
   Todo rebuild(void Function(TodoBuilder) updates) =>
@@ -163,7 +179,8 @@ class _$Todo extends Todo {
         description == other.description &&
         userId == other.userId &&
         status == other.status &&
-        createdAt == other.createdAt;
+        createdAt == other.createdAt &&
+        updatedAt == other.updatedAt;
   }
 
   @override
@@ -175,6 +192,7 @@ class _$Todo extends Todo {
     _$hash = $jc(_$hash, userId.hashCode);
     _$hash = $jc(_$hash, status.hashCode);
     _$hash = $jc(_$hash, createdAt.hashCode);
+    _$hash = $jc(_$hash, updatedAt.hashCode);
     _$hash = $jf(_$hash);
     return _$hash;
   }
@@ -187,7 +205,8 @@ class _$Todo extends Todo {
           ..add('description', description)
           ..add('userId', userId)
           ..add('status', status)
-          ..add('createdAt', createdAt))
+          ..add('createdAt', createdAt)
+          ..add('updatedAt', updatedAt))
         .toString();
   }
 }
@@ -219,6 +238,10 @@ class TodoBuilder implements Builder<Todo, TodoBuilder> {
   String? get createdAt => _$this._createdAt;
   set createdAt(String? createdAt) => _$this._createdAt = createdAt;
 
+  String? _updatedAt;
+  String? get updatedAt => _$this._updatedAt;
+  set updatedAt(String? updatedAt) => _$this._updatedAt = updatedAt;
+
   TodoBuilder();
 
   TodoBuilder get _$this {
@@ -230,6 +253,7 @@ class TodoBuilder implements Builder<Todo, TodoBuilder> {
       _userId = $v.userId;
       _status = $v.status;
       _createdAt = $v.createdAt;
+      _updatedAt = $v.updatedAt;
       _$v = null;
     }
     return this;
@@ -273,6 +297,11 @@ class TodoBuilder implements Builder<Todo, TodoBuilder> {
             createdAt,
             r'Todo',
             'createdAt',
+          ),
+          updatedAt: BuiltValueNullFieldError.checkNotNull(
+            updatedAt,
+            r'Todo',
+            'updatedAt',
           ),
         );
     replace(_$result);
