@@ -1,32 +1,16 @@
-class AppUser {
-  final String uid;
-  final String name;
-  final String email;
-  final DateTime createdAt;
-  final DateTime updatedAt;
+library user_model;
+import 'package:built_value/built_value.dart';
+import 'package:built_value/serializer.dart';
+part 'user_model.g.dart';
+abstract class AppUser implements Built<AppUser, AppUserBuilder> {
+  String get uid;
+  String get name;
+  String get email;
+  String get createdAt;
 
-  AppUser({
-    required this.uid,
-    required this.name,
-    required this.email,
-    required this.createdAt,
-    required this.updatedAt,
-  });
+  AppUser._();
 
-  Map<String, dynamic> toMap() => {
-        'name': name,
-        'email': email,
-        'createdAt': createdAt.toIso8601String(),
-        'updatedAt': updatedAt.toIso8601String(),
-      };
+  factory AppUser([void Function(AppUserBuilder) updates]) = _$AppUser;
 
-  factory AppUser.fromMap(String uid, Map<String, dynamic> map) {
-    return AppUser(
-      uid: uid,
-      name: map['name'],
-      email: map['email'],
-      createdAt: DateTime.parse(map['createdAt']),
-      updatedAt: DateTime.parse(map['updatedAt']),
-    );
-  }
-}
+  static Serializer<AppUser> get serializer => _$appUserSerializer;
+}  

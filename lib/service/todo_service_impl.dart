@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+
 import '../core/todo_service.dart';
 import '../model/todo_model.dart';
+import '../model/serializers.dart';
 
 class TodoServiceImpl implements TodoService {
   final _db = FirebaseFirestore.instance;
@@ -11,17 +13,42 @@ class TodoServiceImpl implements TodoService {
         .collection('tasks')
         .where('userId', isEqualTo: userId)
         .snapshots()
-        .map((s) => s.docs.map((d) => Todo.fromMap(d.id, d.data())).toList());
+        .map((snapshot) {
+      return snapshot.docs.map((doc) {
+        final data = {
+          ...doc.data(),
+          'id': doc.id, // important for built_value
+        };
+
+        return serializers.deserializeWith(
+          Todo.serializer,
+          data,
+        )!;
+      }).toList();
+    });
   }
 
   @override
   Future<void> addTodo(Todo todo) async {
-    await _db.collection('tasks').add(todo.toMap());
+    final json = serializers.serializeWith(
+      Todo.serializer,
+      todo,
+    );
+
+    await _db.collection('tasks').add(json as Map<String, dynamic>);
   }
 
   @override
   Future<void> updateTodo(Todo todo) async {
-    await _db.collection('tasks').doc(todo.id).update(todo.toMap());
+    final json = serializers.serializeWith(
+      Todo.serializer,
+      todo,
+    );
+
+    await _db
+        .collection('tasks')
+        .doc(todo.id)
+        .update(json as Map<String, dynamic>);
   }
 
   @override
