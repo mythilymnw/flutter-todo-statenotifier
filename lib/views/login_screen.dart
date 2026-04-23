@@ -25,7 +25,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
 
-    // ✅ SAFE LISTENER (correct place)
+    
     ref.listen(authProvider, (prev, next) {
       next.whenOrNull(
         data: (user) {

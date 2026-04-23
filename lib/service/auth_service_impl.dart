@@ -1,11 +1,13 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
+
 import '../core/auth_service.dart';
 import '../model/user_model.dart';
+import '../model/serializers.dart';
 
 class AuthServiceImpl implements AuthService {
-  static const String userKey = "user";
+  static const String usersKey = "users";
   static const String currentUserKey = "current_user";
 
   final StreamController<AppUser?> _controller =
@@ -13,52 +15,58 @@ class AuthServiceImpl implements AuthService {
 
   AppUser? _currentUser;
 
- 
+  /// INIT (App start)
   Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
     final data = prefs.getString(currentUserKey);
 
     if (data != null) {
-      _currentUser = AppUser.fromJson(jsonDecode(data));
+      final decoded = jsonDecode(data);
+      _currentUser = serializers.deserializeWith(AppUser.serializer, decoded);
       _controller.add(_currentUser);
     } else {
       _controller.add(null);
     }
   }
 
-  
+  /// REGISTER
   @override
-  Future<AppUser?> register(
-      String name, String email, String password) async {
+  Future<AppUser?> register(String name, String email, String password) async {
     final prefs = await SharedPreferences.getInstance();
 
-   
-    final existing = prefs.getString(userKey);
-    if (existing != null) {
-      final decoded = jsonDecode(existing);
-      if (decoded['email'] == email) {
-        throw Exception("User already exists");
-      }
+    final usersString = prefs.getString(usersKey);
+    List users = usersString != null ? jsonDecode(usersString) : [];
+
+    /// Check existing user
+    final exists = users.any((u) => u['email'] == email);
+    if (exists) {
+      throw Exception("User already exists");
     }
 
-    final user = AppUser((b) => b
-      ..uid = DateTime.now().millisecondsSinceEpoch.toString()
-      ..name = name
-      ..email = email
-      ..createdAt = DateTime.now().toIso8601String()
-      ..updatedAt = DateTime.now().toIso8601String(),
+    final user = AppUser(
+      (b) => b
+        ..uid = DateTime.now().millisecondsSinceEpoch.toString()
+        ..name = name
+        ..email = email
+        ..createdAt = DateTime.now().toIso8601String()
+        ..updatedAt = DateTime.now().toIso8601String(),
     );
 
-    
-    final data = {
-      ...user.toJson(),
+    final userData = {
+      ...serializers.serializeWith(AppUser.serializer, user)
+          as Map<String, dynamic>,
       "password": password,
     };
 
-    await prefs.setString(userKey, jsonEncode(data));
+    users.add(userData);
 
-    /
-    await prefs.setString(currentUserKey, jsonEncode(user.toJson()));
+    await prefs.setString(usersKey, jsonEncode(users));
+
+    /// Save current user (without password)
+    await prefs.setString(
+      currentUserKey,
+      jsonEncode(serializers.serializeWith(AppUser.serializer, user)),
+    );
 
     _currentUser = user;
     _controller.add(user);
@@ -66,34 +74,37 @@ class AuthServiceImpl implements AuthService {
     return user;
   }
 
-  
+  /// LOGIN
   @override
   Future<AppUser?> login(String email, String password) async {
     final prefs = await SharedPreferences.getInstance();
-    final data = prefs.getString(userKey);
+    final usersString = prefs.getString(usersKey);
 
-    if (data == null) {
-      throw Exception("No user found");
+    if (usersString == null) {
+      throw Exception("No users found");
     }
 
-    final decoded = jsonDecode(data);
+    final List users = jsonDecode(usersString);
 
-    if (decoded['email'] == email &&
-        decoded['password'] == password) {
-      final user = AppUser.fromJson(decoded);
+    final matchedUser = users.firstWhere(
+      (u) => u['email'] == email && u['password'] == password,
+      orElse: () => throw Exception("Invalid credentials"),
+    );
 
-      await prefs.setString(currentUserKey, jsonEncode(user.toJson()));
+    final user = serializers.deserializeWith(AppUser.serializer, matchedUser);
 
-      _currentUser = user;
-      _controller.add(user);
+    await prefs.setString(
+      currentUserKey,
+      jsonEncode(serializers.serializeWith(AppUser.serializer, user)),
+    );
 
-      return user;
-    }
+    _currentUser = user;
+    _controller.add(user);
 
-    throw Exception("Invalid credentials");
+    return user;
   }
 
-  
+  /// LOGOUT
   @override
   Future<void> logout() async {
     final prefs = await SharedPreferences.getInstance();
@@ -103,7 +114,12 @@ class AuthServiceImpl implements AuthService {
     _controller.add(null);
   }
 
-  
+  /// AUTH STATE
   @override
   Stream<AppUser?> authState() => _controller.stream;
+
+  /// DISPOSE
+  void dispose() {
+    _controller.close();
+  }
 }

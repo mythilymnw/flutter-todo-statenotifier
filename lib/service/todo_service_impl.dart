@@ -104,7 +104,7 @@ class TodoServiceImpl implements TodoService {
     }
   }
 
-  // OPTIONAL (GOOD PRACTICE)
+
   void dispose() {
     _controller.close();
   }

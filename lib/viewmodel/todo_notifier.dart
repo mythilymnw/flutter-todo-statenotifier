@@ -18,10 +18,10 @@ class TodoNotifier extends StateNotifier<AsyncValue<List<Todo>>> {
   TodoNotifier() : _service = TodoServiceImpl(),
         super(const AsyncValue.loading());
 
-  // SAFE LISTEN
+ 
   void listen(String userId) {
     if (_currentUserId == userId && _subscription != null) {
-      return; // prevent duplicate listen
+      return; 
     }
 
     _currentUserId = userId;
